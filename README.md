@@ -73,7 +73,7 @@ docker build -t custom-waf:latest ./images/modsec
 ## Deploying the Lab
 Open Containerlabs and navigate to the downloaded YAML file, then run the following command:
 ```
-sudo containerlab deploy -t topology.clab.yml
+sudo containerlab deploy -t lab.clab.yml
 ```
 ## Testing the Firewall
 To test connections between subnets on the network, run the following commands:
