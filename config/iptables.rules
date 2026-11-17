@@ -1,0 +1,86 @@
+
+*filter
+
+# ==================================================
+# DEFAULT POLICIES
+# ==================================================
+
+:INPUT DROP [0:0]
+:FORWARD DROP [0:0]
+:OUTPUT ACCEPT [0:0]
+
+
+# ==================================================
+# INPUT CHAIN - TRAFFIC TO THE FIREWALL ITSELF
+# ==================================================
+
+# Allow established and related connections
+-A INPUT -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
+
+# Allow IT Admin to SSH into the firewall
+-A INPUT -i eth3 -s 10.10.30.0/24 -p tcp --dport 22 -m conntrack --ctstate NEW -j ACCEPT
+
+
+# ==================================================
+# FORWARD CHAIN - TRAFFIC BETWEEN SUBNETS
+# ==================================================
+
+# Allow established and related connections
+-A FORWARD -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
+
+
+# --------------------------------------------------
+# POLICY 1 - IT ADMIN SSH ACCESS
+# --------------------------------------------------
+
+# Allow IT Admin to initiate SSH connections
+-A FORWARD -i eth3 -s 10.10.30.0/24 -p tcp --dport 22 -m conntrack --ctstate NEW -j ACCEPT
+
+
+# --------------------------------------------------
+# POLICY 2 - WAF ACCESS
+# --------------------------------------------------
+
+# Students -> WAF
+-A FORWARD -i eth1 -s 10.10.10.0/24 -d 10.10.40.80 -p tcp --dport 8080 -m conntrack --ctstate NEW -j ACCEPT
+
+# Faculty -> WAF
+-A FORWARD -i eth2 -s 10.10.20.0/24 -d 10.10.40.80 -p tcp --dport 8080 -m conntrack --ctstate NEW -j ACCEPT
+
+# IT Admin -> WAF
+-A FORWARD -i eth3 -s 10.10.30.0/24 -d 10.10.40.80 -p tcp --dport 8080 -m conntrack --ctstate NEW -j ACCEPT
+
+
+# --------------------------------------------------
+# POLICY 3 - POSTGRESQL DATABASE ACCESS
+# --------------------------------------------------
+
+# Block ALL traffic from Students to the Grading Database
+-A FORWARD -i eth1 -s 10.10.10.0/24 -d 10.10.40.100 -j DROP
+
+# Explicitly deny Students access to PostgreSQL
+-A FORWARD -s 10.10.10.0/24 -d 10.10.40.100 -p tcp --dport 5432 -j DROP
+
+# Faculty -> PostgreSQL
+-A FORWARD -i eth2 -s 10.10.20.0/24 -d 10.10.40.100 -p tcp --dport 5432 -m conntrack --ctstate NEW -j ACCEPT
+
+# IT Admin -> PostgreSQL
+-A FORWARD -i eth3 -s 10.10.30.0/24 -d 10.10.40.100 -p tcp --dport 5432 -m conntrack --ctstate NEW -j ACCEPT
+
+
+# --------------------------------------------------
+# POLICY 4 - WAF TO BACKEND APPLICATION
+# --------------------------------------------------
+
+# Allow WAF to access Juice Shop on port 3000
+-A FORWARD -s 10.10.40.80 -d 10.10.40.81 -p tcp --dport 3000 -j ACCEPT
+
+# Deny other routed traffic to the backend application
+-A FORWARD -d 10.10.40.81 -p tcp --dport 3000 -j DROP
+
+
+# ==================================================
+# END OF RULES
+# ==================================================
+
+COMMIT
