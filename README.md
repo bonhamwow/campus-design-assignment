@@ -73,7 +73,7 @@ docker build -t custom-waf:latest ./images/modsec
 ## Deploying the Lab
 Open Containerlabs and navigate to the downloaded YAML file, then run the following command:
 ```
-sudo containerlab deploy -t lab.clab.yml
+sudo containerlab deploy -t lab.clab.yaml
 ```
 ## Testing the Firewall
 To test connections between subnets on the network, run the following commands:
@@ -105,5 +105,5 @@ To test connections between subnets on the network, run the following commands:
 ## Destroying the Lab
 Once you've finished with the lab, run the following command to destroy and clean-up:
 ```
-sudo containerlab destroy -t lab.clab.yml
+sudo containerlab destroy -t lab.clab.yaml
 ```
