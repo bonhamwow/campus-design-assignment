@@ -105,5 +105,5 @@ To test connections between subnets on the network, run the following commands:
 ## Destroying the Lab
 Once you've finished with the lab, run the following command to destroy and clean-up:
 ```
-sudo containerlab destroy -t topology.clab.yml
+sudo containerlab destroy -t lab.clab.yml
 ```
